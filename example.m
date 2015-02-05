@@ -1,6 +1,4 @@
-%% Train an example network to achieve very high classification, both 
-%    fully connected and with a convolutional network.  Begin by loading
-%    the path.
+%% Train an example network to achieve very high classification, fast.
 %    Load paths
 addpath(genpath('./dlt_cnn_map_dropout_nobiasnn'));
 %% Load data
@@ -20,18 +18,18 @@ for i = 2 : nn.n
     nn.W{i - 1} = (rand(nn.size(i), nn.size(i - 1)) - 0.5) * 0.01 * 2;
     nn.vW{i - 1} = zeros(size(nn.W{i-1}));
 end
-
+%% ReLU Train
 % Set up learning constants
 nn.activation_function = 'relu';
 nn.learningRate = 1;
 nn.momentum = 0.5;
 nn.dropoutFraction = 0.5;
 nn.learn_bias = 0;
-%% ReLU Train
-opts.numepochs =  10;        %  Number of full sweeps through data
-opts.batchsize = 100;       %  Take a mean gradient step over this many samples
-
+opts.numepochs =  10;
+opts.batchsize = 100;
+% Train
 nn = nntrain(nn, train_x, train_y, opts);
+% Test
 [er, train_bad] = nntest(nn, train_x, train_y);
 fprintf('TRAINING Accuracy: %2.2f%%.\n', (1-er)*100);
 [er, bad] = nntest(nn, test_x, test_y);
