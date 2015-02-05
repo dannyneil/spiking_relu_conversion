@@ -8,10 +8,8 @@ train_x = double(train_x) / 255;
 test_x  = double(test_x)  / 255;
 train_y = double(train_y);
 test_y  = double(test_y);
-clear opts;
-
+% Initialize net
 nn = nnsetup([784 1200 1200 10]);
-
 % Rescale weights for ReLU
 for i = 2 : nn.n   
     % Weights - choose between [-0.1 0.1]
@@ -41,7 +39,7 @@ t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
 t_opts.duration     = 0.050;
 t_opts.report_every = 0.010;
-t_opts.max_rate     =   200;
+t_opts.max_rate     = 1000;
 nn = nnlifsim(nn, test_x, test_y, t_opts);
 fprintf('Done.\n');
 %% Data-normalize the NN
