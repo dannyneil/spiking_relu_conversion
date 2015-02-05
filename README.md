@@ -11,6 +11,12 @@ Conversion code for training and running extremely high-performance spiking neur
 
 * Examples for both convolutional networks and fully-connected networks
 
+* Relies heavily on the great work done for the DeepLearnToolbox (https://github.com/rasmusbergpalm/DeepLearnToolbox), and includes code from that repo here
+
+### Citation
+
+Coming soon, hopefully.
+
 ### Example
 
 ```matlab
