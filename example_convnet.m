@@ -11,9 +11,9 @@ test_y = double(test_y');
 % Initialize net
 cnn.layers = {
     struct('type', 'i') %input layer
-    struct('type', 'c', 'outputmaps', 6, 'kernelsize', 5) %convolution layer
-    struct('type', 's', 'scale', 2) %sub sampling layer
     struct('type', 'c', 'outputmaps', 12, 'kernelsize', 5) %convolution layer
+    struct('type', 's', 'scale', 2) %sub sampling layer
+    struct('type', 'c', 'outputmaps', 16, 'kernelsize', 5) %convolution layer
     struct('type', 's', 'scale', 2) %subsampling layer
 };
 cnn = cnnsetup(cnn, train_x, train_y);
@@ -25,11 +25,11 @@ cnn.d_act_fun = @(forward_act)double(forward_act>0);
 % Set up learning constants
 opts.alpha = 1;
 opts.batchsize = 50;
-opts.numepochs = 10;
+opts.numepochs = 20;
 opts.learn_bias = 0;
 opts.dropout = 0.5;
 cnn.first_layer_dropout = 0;
-% Train - takes about 55 seconds per epoch on my machine
+% Train - takes about 435 seconds per epoch on my machine
 cnn = cnntrain(cnn, train_x, train_y, opts);
 % Test
 [er, bad] = cnntest(cnn, train_x, train_y);

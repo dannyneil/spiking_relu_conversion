@@ -11,7 +11,15 @@ Conversion code for training and running extremely high-performance spiking neur
 
 * Examples for both convolutional networks and fully-connected networks
 
-* Relies heavily on the great work done for the DeepLearnToolbox (https://github.com/rasmusbergpalm/DeepLearnToolbox), and includes code from that repo here
+* Relies heavily on the great work done for the DeepLearnToolbox (https://github.com/rasmusbergpalm/DeepLearnToolbox), and includes code from that repo here.  Please cite them:
+
+```
+@MASTERSTHESIS\{IMM2012-06284,
+    author       = "R. B. Palm",
+    title        = "Prediction as a candidate for learning deep hierarchical models of data",
+    year         = "2012",
+}
+```
 
 ### Citation
 

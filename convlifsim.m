@@ -1,7 +1,7 @@
 function cnn=convlifsim(cnn, test_x, test_y, opts)
-THRESH = 1;
 dt = opts.dt;
 performance = [];
+
 % INIT
 for l = 1 : numel(cnn.layers)
     cnn.layers{l}.mem = cell(size(cnn.layers{l}.a));
@@ -10,32 +10,21 @@ for l = 1 : numel(cnn.layers)
         cnn.layers{l}.mem{j} = blank_neurons;
         cnn.layers{l}.refrac_end{j} = blank_neurons;        
         cnn.layers{l}.sum_spikes{j} = blank_neurons;
-    end
+    end    
 end
 
 cnn.s_o = zeros(10,size(test_x, 3));
 cnn.mem_o = zeros(10,size(test_x, 3));
 cnn.refrac_end_o = zeros(10,size(test_x, 3));
-
-
 if strcmp(cnn.layers{end}.type, 'c')
     cnn.sum_fv = zeros(cnn.layers{end}.outputmaps*1, size(test_x, 3));
 else
     cnn.sum_fv = zeros(cnn.layers{end-1}.outputmaps*16, size(test_x, 3));
 end
+
+
 for timespan_idx = 1 : numel(opts.timespan)
     timespan = opts.timespan(timespan_idx);
-%     input_spikes = zeros([timespan/dt size(test_x,1) size(test_x,2) size(test_x,3)]);
-%     for i = 1:size(test_x,1)
-%         i
-%         for j = 1:size(test_x,2)
-%             for m = 1:size(test_x,3)
-%                 idxs = randsample(timespan/dt, int32(opts.max_rate*timespan*test_x(i,j,m)));
-%                 input_spikes(idxs, i, j, m) = 1;
-%             end
-%         end
-%     end    
-%     sum(input_spikes(:,:,:,1), 1)
     for t=dt:dt:timespan
         % create poisson distributed spikes from the input images (for all
         % images in parallel)
