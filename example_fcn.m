@@ -35,11 +35,11 @@ fprintf('Test Accuracy: %2.2f%%.\n', (1-er)*100);
 %% Spike-based Testing of Fully-Connected NN
 t_opts = struct;
 t_opts.t_ref        = 0.000;
-t_opts.threshold    =   1.0;
+t_opts.threshold    =   4.0;
 t_opts.dt           = 0.010;
 t_opts.duration     = 0.020;
 t_opts.report_every = 0.010;
-t_opts.max_rate     =  1000;
+t_opts.max_rate     =   200;
 nn = nnlifsim(nn, test_x, test_y, t_opts);
 fprintf('Done.\n');
 %% Data-normalize the NN
@@ -59,3 +59,9 @@ t_opts.report_every = 0.010;
 t_opts.max_rate     =  1000;
 norm_nn = nnlifsim(norm_nn, test_x, test_y, t_opts);
 fprintf('Done.\n');
+%% Show the difference
+figure(1); clf;
+plot(nn.performance);
+hold on; grid on;
+plot(norm_nn.performance);
+legend('Unnormalized Net, Best Params', 'Normalized Net, Default Params');
