@@ -15,7 +15,7 @@ end
 [~,   ans_idx] = max(test_y');
 
 % Time-stepped simulation
-for t=0:dt:opts.duration
+for t=dt:dt:opts.duration
         % Create poisson distributed spikes from the input images
         %   (for all images in parallel)
         rescale_fac = 1/(dt*opts.max_rate);
@@ -41,7 +41,7 @@ for t=0:dt:opts.duration
         if(mod(round(t/dt),round(opts.report_every/dt)) == round(opts.report_every/dt)-1)
             [~, guess_idx] = max(nn.layers{end}.sum_spikes');
             acc = sum(guess_idx==ans_idx)/size(test_y,1)*100;
-            fprintf('Accuracy: %2.2f%%.\n', acc);
+            fprintf('Time: %1.3fs | Accuracy: %2.2f%%.\n', t, acc);
             nn.performance(end+1) = acc;
         else
             fprintf('.');            
