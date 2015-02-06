@@ -1,4 +1,4 @@
-%% Train an example network to achieve very high classification, fast.
+%% Train an example FC network to achieve very high classification, fast.
 %    Load paths
 addpath(genpath('./dlt_cnn_map_dropout_nobiasnn'));
 %% Load data
@@ -23,9 +23,9 @@ nn.learningRate = 1;
 nn.momentum = 0.5;
 nn.dropoutFraction = 0.5;
 nn.learn_bias = 0;
-opts.numepochs =  10;
+opts.numepochs =  15;
 opts.batchsize = 100;
-% Train
+% Train - takes about 15 seconds per epoch on my machine
 nn = nntrain(nn, train_x, train_y, opts);
 % Test
 [er, train_bad] = nntest(nn, train_x, train_y);
@@ -37,9 +37,9 @@ t_opts = struct;
 t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
-t_opts.duration     = 0.050;
+t_opts.duration     = 0.020;
 t_opts.report_every = 0.010;
-t_opts.max_rate     = 1000;
+t_opts.max_rate     =  1000;
 nn = nnlifsim(nn, test_x, test_y, t_opts);
 fprintf('Done.\n');
 %% Data-normalize the NN
@@ -53,7 +53,7 @@ t_opts = struct;
 t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
-t_opts.duration     = 0.050;
+t_opts.duration     = 0.020;
 t_opts.report_every = 0.010;
 t_opts.max_rate     =  1000;
 norm_nn = nnlifsim(norm_nn, test_x, test_y, t_opts);
