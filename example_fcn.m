@@ -61,8 +61,8 @@ norm_nn = nnlifsim(norm_nn, test_x, test_y, t_opts);
 fprintf('Done.\n');
 %% Show the difference
 figure(1); clf;
-plot(0:t_opts.dt:t_opts.duration, nn.performance);
+plot(t_opts.dt:t_opts.dt:t_opts.duration, nn.performance);
 hold on; grid on;
-plot(norm_nn.performance);
-legend(0:t_opts.dt:t_opts.duration, 'Unnormalized Net, Best Params', 'Normalized Net, Default Params');
+plot(t_opts.dt:t_opts.dt:t_opts.duration, norm_nn.performance);
+legend('Unnormalized Net, Best Params', 'Normalized Net, Default Params');
 ylim([90 100]);
