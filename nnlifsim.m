@@ -1,6 +1,6 @@
 function nn=nnlifsim(nn, test_x, test_y, opts)
 dt = opts.dt;
-performance = [];
+nn.performance = [];
 num_examples = size(test_x,1);
 
 % Initialize network architecture
@@ -42,6 +42,7 @@ for t=0:dt:opts.duration
             [~, guess_idx] = max(nn.layers{end}.sum_spikes');
             acc = sum(guess_idx==ans_idx)/size(test_y,1)*100;
             fprintf('Accuracy: %2.2f%%.\n', acc);
+            nn.performance(end+1) = acc;
         else
             fprintf('.');            
         end

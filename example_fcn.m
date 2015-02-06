@@ -36,7 +36,7 @@ fprintf('Test Accuracy: %2.2f%%.\n', (1-er)*100);
 t_opts = struct;
 t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
-t_opts.dt           = 0.001;
+t_opts.dt           = 0.010;
 t_opts.duration     = 0.020;
 t_opts.report_every = 0.010;
 t_opts.max_rate     =  1000;
@@ -44,6 +44,7 @@ nn = nnlifsim(nn, test_x, test_y, t_opts);
 fprintf('Done.\n');
 %% Data-normalize the NN
 [norm_nn, norm_constants] = normalize_nn_data(nn, train_x);
+fprintf('NN normalized.\n');
 for idx=1:numel(norm_constants)
     fprintf('Normalization Factor for Layer %i: %3.5f\n',idx, norm_constants(idx));
 end
@@ -52,7 +53,7 @@ fprintf('NN normalized.\n');
 t_opts = struct;
 t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
-t_opts.dt           = 0.001;
+t_opts.dt           = 0.010;
 t_opts.duration     = 0.020;
 t_opts.report_every = 0.010;
 t_opts.max_rate     =  1000;

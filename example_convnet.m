@@ -2,7 +2,7 @@
 %    Load paths
 addpath(genpath('./dlt_cnn_map_dropout_nobiasnn'));
 %% Load data
-rand('state', 0);
+rand('state', 1);
 load mnist_uint8;
 train_x = double(reshape(train_x',28,28,60000)) / 255;
 test_x = double(reshape(test_x',28,28,10000)) / 255;
@@ -29,22 +29,22 @@ opts.numepochs = 20;
 opts.learn_bias = 0;
 opts.dropout = 0.5;
 cnn.first_layer_dropout = 0;
-% Train - takes about 435 seconds per epoch on my machine
+% Train - takes about 135 seconds per epoch on my machine
 cnn = cnntrain(cnn, train_x, train_y, opts);
 % Test
 [er, bad] = cnntest(cnn, train_x, train_y);
 fprintf('TRAINING Accuracy: %2.2f%%.\n', (1-er)*100);
 [er, bad] = cnntest(cnn, test_x, test_y);
 fprintf('Test Accuracy: %2.2f%%.\n', (1-er)*100);
-%% Spike-based Testing of Fully-Connected NN
+%% Spike-based Testing of a ConvNet
 t_opts = struct;
 t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
 t_opts.duration     = 0.050;
-t_opts.report_every = 0.010;
-t_opts.max_rate     = 1000;
-nn = convlifsim(cnn, test_x, test_y, t_opts);
+t_opts.report_every = 0.002;
+t_opts.max_rate     =  1000;
+cnn = convlifsim(cnn, test_x, test_y, t_opts);
 fprintf('Done.\n');
 %% Data-normalize the CNN
 [norm_nn, norm_constants] = normalize_cnn_data(cnn, train_x);
@@ -60,5 +60,5 @@ t_opts.dt           = 0.001;
 t_opts.duration     = 0.050;
 t_opts.report_every = 0.010;
 t_opts.max_rate     =  1000;
-norm_nn = nnlifsim(norm_nn, test_x, test_y, t_opts);
+norm_nn = lifsim(norm_nn, test_x, test_y, t_opts);
 fprintf('Done.\n');

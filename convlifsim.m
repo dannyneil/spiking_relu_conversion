@@ -1,133 +1,117 @@
-function cnn=convlifsim(cnn, test_x, test_y, opts)
-dt = opts.dt;
-performance = [];
-
-% INIT
+function cnn = convlifsim(cnn, test_x, test_y, opts)
+num_examples = size(test_x, 3);
+num_classes  = size(test_y, 1);
+% Initialize a neuron-based network - needs to be activated to get all the
+%   sizes. Shouldn't be an issue after training, unless cleaned.
 for l = 1 : numel(cnn.layers)
-    cnn.layers{l}.mem = cell(size(cnn.layers{l}.a));
-    for j=1:numel(cnn.layers{l}.mem)
-        blank_neurons = zeros(size(cnn.layers{l}.a{j}, 1), size(cnn.layers{l}.a{j}, 2), size(test_x, 3));
-        cnn.layers{l}.mem{j} = blank_neurons;
-        cnn.layers{l}.refrac_end{j} = blank_neurons;        
-        cnn.layers{l}.sum_spikes{j} = blank_neurons;
+    outputmaps = numel(cnn.layers{l}.a);
+    cnn.layers{l}.mem = cell(1, outputmaps);
+    for j=1:outputmaps
+        correctly_sized_zeros = zeros(size(cnn.layers{l}.a{j}, 1), ...
+            size(cnn.layers{l}.a{j}, 2), num_examples);
+        cnn.layers{l}.mem{j} = correctly_sized_zeros;
+        cnn.layers{l}.refrac_end{j} = correctly_sized_zeros;        
+        cnn.layers{l}.sum_spikes{j} = correctly_sized_zeros;
     end    
 end
+cnn.sum_fv = zeros(size(cnn.ffW,2), num_examples);
+cnn.o_mem        = zeros(num_classes, num_examples);
+cnn.o_refrac_end = zeros(num_classes, num_examples);
+cnn.o_sum_spikes = zeros(num_classes, num_examples);
 
-cnn.s_o = zeros(10,size(test_x, 3));
-cnn.mem_o = zeros(10,size(test_x, 3));
-cnn.refrac_end_o = zeros(10,size(test_x, 3));
-if strcmp(cnn.layers{end}.type, 'c')
-    cnn.sum_fv = zeros(cnn.layers{end}.outputmaps*1, size(test_x, 3));
-else
-    cnn.sum_fv = zeros(cnn.layers{end-1}.outputmaps*16, size(test_x, 3));
-end
+% Precache answers
+[~, ans_idx] = max(test_y);
 
+for t = 0:opts.dt:opts.duration
+    % Create poisson distributed spikes from the input images
+    %   (for all images in parallel)
+    rescale_fac = 1/(opts.dt*opts.max_rate);
+    spike_snapshot = rand(size(test_x)) * rescale_fac;
+    inp_image = spike_snapshot <= test_x;
 
-for timespan_idx = 1 : numel(opts.timespan)
-    timespan = opts.timespan(timespan_idx);
-    for t=dt:dt:timespan
-        % create poisson distributed spikes from the input images (for all
-        % images in parallel)
-        rescale_fac = 1/(dt*opts.max_rate);
-        spike_snapshot = rand(size(test_x)) * rescale_fac;
-        inp_image = spike_snapshot <= test_x; %
-        
-        % or use exact number of input spikes
-%         inp_image = squeeze(input_spikes(int32(t/dt),:,:,:));
-        
-        cnn.layers{1}.spikes{1} = inp_image;
-        cnn.layers{1}.mem{1} = cnn.layers{1}.mem{1} + inp_image;
-        cnn.layers{1}.sum_spikes{1} = cnn.layers{1}.sum_spikes{1} + inp_image;
-        inputmaps = 1;
-        for l = 2 : numel(cnn.layers)   %  for each layer
-            if strcmp(cnn.layers{l}.type, 'c')
-                % Convolution layer, output a map for each convolution
-                for j = 1 : cnn.layers{l}.outputmaps
-                    % Sum up input maps
-                    z = zeros(size(cnn.layers{l - 1}.spikes{1}) - [cnn.layers{l}.kernelsize - 1 cnn.layers{l}.kernelsize - 1 0]);
-                    for i = 1 : inputmaps   %  for each input map
-                        %  convolve with corresponding kernel and add to temp output map
-                        z = z + convn(cnn.layers{l - 1}.spikes{i}, cnn.layers{l}.k{i}{j}, 'valid');
-                    end
-                    % Only allow non-refractory neurons to get input
-                    z(cnn.layers{l}.refrac_end{j} > t) = 0;
-                    % Add input
-                    cnn.layers{l}.mem{j} = cnn.layers{l}.mem{j} + z;
-                    % Check for spiking
-                    cnn.layers{l}.spikes{j} = cnn.layers{l}.mem{j} >= THRESH;
-                    % Reset
-                    cnn.layers{l}.mem{j}(cnn.layers{l}.spikes{j}) = 0;
-                    % Ban updates until....
-                    cnn.layers{l}.refrac_end{j}(cnn.layers{l}.spikes{j}) = t + opts.t_ref;
-                    % Store result for analysis later
-                    cnn.layers{l}.sum_spikes{j} = cnn.layers{l}.sum_spikes{j} + cnn.layers{l}.spikes{j};
+    cnn.layers{1}.spikes{1} = inp_image;
+    cnn.layers{1}.mem{1} = cnn.layers{1}.mem{1} + inp_image;
+    cnn.layers{1}.sum_spikes{1} = cnn.layers{1}.sum_spikes{1} + inp_image;
+    inputmaps = 1;
+    for l = 2 : numel(cnn.layers)   %  for each layer
+        if strcmp(cnn.layers{l}.type, 'c')
+            % Convolution layer, output a map for each convolution
+            for j = 1 : cnn.layers{l}.outputmaps
+                % Sum up input maps
+                z = zeros(size(cnn.layers{l - 1}.spikes{1}) - [cnn.layers{l}.kernelsize - 1 cnn.layers{l}.kernelsize - 1 0]);
+                for i = 1 : inputmaps   %  for each input map
+                    %  convolve with corresponding kernel and add to temp output map
+                    z = z + convn(cnn.layers{l - 1}.spikes{i}, cnn.layers{l}.k{i}{j}, 'valid');
                 end
-                %  set number of input maps to this layers number of outputmaps
-                inputmaps = cnn.layers{l}.outputmaps;
-            elseif strcmp(cnn.layers{l}.type, 's')
-                %  downsample
-                for j = 1 : inputmaps
-                    z = convn(cnn.layers{l - 1}.spikes{j}, ones(cnn.layers{l}.scale) / (cnn.layers{l}.scale ^ 2), 'valid');   %  !! replace with variable
-                    z = z(1 : cnn.layers{l}.scale : end, 1 : cnn.layers{l}.scale : end, :);
-                    % DO NEURON UPDATE
-                    %   Only allow non-refractory neurons to get input
-                    z(cnn.layers{l}.refrac_end{j} > t) = 0;
-                    %   Add input
-                    cnn.layers{l}.mem{j} = cnn.layers{l}.mem{j} + z;
-                    %   Check for spiking
-                    cnn.layers{l}.spikes{j} = cnn.layers{l}.mem{j} >= THRESH;
-                    %   Reset
-                    cnn.layers{l}.mem{j}(cnn.layers{l}.spikes{j}) = 0;
-                    %   Ban updates until....
-                    cnn.layers{l}.refrac_end{j}(cnn.layers{l}.spikes{j}) = t + opts.t_ref;              
-                    % Store result for analysis later
-                    cnn.layers{l}.sum_spikes{j} = cnn.layers{l}.sum_spikes{j} + cnn.layers{l}.spikes{j};                
-                end
+                % Only allow non-refractory neurons to get input
+                z(cnn.layers{l}.refrac_end{j} > t) = 0;
+                % Add input
+                cnn.layers{l}.mem{j} = cnn.layers{l}.mem{j} + z;
+                % Check for spiking
+                cnn.layers{l}.spikes{j} = cnn.layers{l}.mem{j} >= opts.threshold;
+                % Reset
+                cnn.layers{l}.mem{j}(cnn.layers{l}.spikes{j}) = 0;
+                % Ban updates until....
+                cnn.layers{l}.refrac_end{j}(cnn.layers{l}.spikes{j}) = t + opts.t_ref;
+                % Store result for analysis later
+                cnn.layers{l}.sum_spikes{j} = cnn.layers{l}.sum_spikes{j} + cnn.layers{l}.spikes{j};
+            end
+            %  set number of input maps to this layers number of outputmaps
+            inputmaps = cnn.layers{l}.outputmaps;
+        elseif strcmp(cnn.layers{l}.type, 's')
+            %  Subsample by averaging
+            for j = 1 : inputmaps
+                % Average input
+                z = convn(cnn.layers{l - 1}.spikes{j}, ones(cnn.layers{l}.scale) / (cnn.layers{l}.scale ^ 2), 'valid');
+                % Downsample
+                z = z(1 : cnn.layers{l}.scale : end, 1 : cnn.layers{l}.scale : end, :);
+                % Only allow non-refractory neurons to get input
+                z(cnn.layers{l}.refrac_end{j} > t) = 0;
+                % Add input
+                cnn.layers{l}.mem{j} = cnn.layers{l}.mem{j} + z;
+                % Check for spiking
+                cnn.layers{l}.spikes{j} = cnn.layers{l}.mem{j} >= opts.threshold;
+                % Reset
+                cnn.layers{l}.mem{j}(cnn.layers{l}.spikes{j}) = 0;
+                % Ban updates until....
+                cnn.layers{l}.refrac_end{j}(cnn.layers{l}.spikes{j}) = t + opts.t_ref;              
+                % Store result for analysis later
+                cnn.layers{l}.sum_spikes{j} = cnn.layers{l}.sum_spikes{j} + cnn.layers{l}.spikes{j};                
             end
         end
-
-        %  concatenate all end layer feature maps into vector
-        cnn.fv = [];
-        for j = 1 : numel(cnn.layers{end}.spikes)
-            sa = size(cnn.layers{end}.spikes{j});
-            cnn.fv = [cnn.fv; reshape(cnn.layers{end}.spikes{j}, sa(1) * sa(2), sa(3))];
-        end
-        cnn.sum_fv = cnn.sum_fv + cnn.fv;
-        fprintf('.');
-%         if(mod(t/dt, 50+1) == 50)
-%             fprintf('%2.2f%%\n.', t/((timespan_idx) * timespan) * 100);
-%         end
-        
-        cnn.mem_o = cnn.mem_o + cnn.ffW * cnn.fv;
-        cnn.mem_o(cnn.refrac_end_o > t) = 0;
-        cnn.spikes_o = cnn.mem_o >= THRESH;
-        cnn.mem_o(cnn.spikes_o) = 0;
-        cnn.refrac_end_o(cnn.spikes_o) = t + opts.t_ref;  
-        cnn.s_o = cnn.s_o + cnn.spikes_o;
-        
     end
 
-    for l = 1 : numel(cnn.layers)
-        cnn.layers{l}.refrac_end = cell(size(cnn.layers{l}.a));
-        for j=1:numel(cnn.layers{l}.mem)
-            blank_neurons = zeros(size(cnn.layers{l}.a{j}, 1), size(cnn.layers{l}.a{j}, 2), size(test_x, 3));
-            cnn.layers{l}.refrac_end{j} = blank_neurons;      
-        end
+    % Concatenate all end layer feature maps into vector
+    cnn.fv = [];
+    for j = 1 : numel(cnn.layers{end}.spikes)
+        sa = size(cnn.layers{end}.spikes{j});
+        cnn.fv = [cnn.fv; reshape(cnn.layers{end}.spikes{j}, sa(1) * sa(2), sa(3))];
     end
-    cnn.refrac_end_o = zeros(10,size(test_x, 3));
+    cnn.sum_fv = cnn.sum_fv + cnn.fv;
     
-    % Get answer
-    [~, guess_idx] = max(cnn.s_o);
-    [~,   ans_idx] = max(test_y);
-    acc = sum(guess_idx==ans_idx)/size(test_x,3)*100;
-    performance = [performance; acc];
-    %figure(4); plot(performance); drawnow()
-    fprintf('Spiking accuracy: %2.2f%%\n', acc);
+    % Run the output layer neurons
+    %   Add inputs multiplied by weight
+    impulse = cnn.ffW * cnn.fv;
+    %   Only add input from neurons past their refractory point
+    impulse(cnn.o_refrac_end <= t) = 0;
+    %   Add input to membrane potential
+    cnn.o_mem = cnn.o_mem + impulse;
+    %   Check for spiking
+    cnn.o_spikes = cnn.o_mem >= opts.threshold;
+    %   Reset
+    cnn.o_mem(cnn.o_spikes) = 0;
+    %   Ban updates until....
+    cnn.o_refrac_end(cnn.o_spikes) = t + opts.t_ref;
+    %   Store result for analysis later
+    cnn.o_sum_spikes = cnn.o_sum_spikes + cnn.o_spikes;
     
-    %  feedforward into output perceptrons
-%     cnn.s_o = sigm(cnn.ffW * cnn.sum_fv ...
-%                 * 1/(timespan_idx * timespan) ...
-%                 * (1/opts.max_rate) ...
-%                 + repmat(cnn.ffb, 1, size(cnn.fv, 2)));
-
+    % Tell the user what's going on
+    if(mod(round(t/opts.dt),round(opts.report_every/opts.dt)) == ...
+            0 && (t/opts.dt > 0))
+        [~, guess_idx] = max(cnn.o_sum_spikes);
+        acc = sum(guess_idx==ans_idx)/size(test_y, 2) * 100;
+        fprintf('Accuracy: %2.2f%%.\n', acc);
+    else
+        fprintf('.');            
+    end
 end
