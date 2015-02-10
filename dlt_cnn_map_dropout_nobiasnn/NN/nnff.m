@@ -41,6 +41,8 @@ function nn = nnff(nn, x, y)
 %         nn.a{i} = [ones(m,1) nn.a{i}];
     end
     switch nn.output 
+        case 'relu'
+            nn.a{n} = max(0, nn.a{n - 1} * nn.W{n - 1}');
         case 'sigm'
             nn.a{n} = sigm(nn.a{n - 1} * nn.W{n - 1}');
         case 'linear'
@@ -55,7 +57,7 @@ function nn = nnff(nn, x, y)
     nn.e = y - nn.a{n};
     
     switch nn.output
-        case {'sigm', 'linear'}
+        case {'sigm', 'linear', 'relu'}
             nn.L = 1/2 * sum(sum(nn.e .^ 2)) / m; 
         case 'softmax'
             nn.L = -sum(sum(y .* log(nn.a{n}))) / m;

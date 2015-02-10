@@ -7,7 +7,7 @@ function nn = nnbp(nn)
     switch nn.output
         case 'sigm'
             d{n} = - nn.e .* (nn.a{n} .* (1 - nn.a{n}));
-        case {'softmax','linear'}
+        case {'softmax','linear', 'relu'}
             d{n} = - nn.e;
     end
     for i = (n - 1) : -1 : 2

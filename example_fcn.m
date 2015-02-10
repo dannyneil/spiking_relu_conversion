@@ -19,11 +19,12 @@ end
 %% ReLU Train
 % Set up learning constants
 nn.activation_function = 'relu';
+nn.output ='relu';
 nn.learningRate = 1;
 nn.momentum = 0.5;
 nn.dropoutFraction = 0.5;
 nn.learn_bias = 0;
-opts.numepochs =  15;
+opts.numepochs =  50;
 opts.batchsize = 100;
 % Train - takes about 15 seconds per epoch on my machine
 nn = nntrain(nn, train_x, train_y, opts);
