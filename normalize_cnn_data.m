@@ -30,10 +30,10 @@ function net = normalize_cnn_data(net, train_x)
         end
     end
 
-    max_weight = max(max(net.ffW))
-    max_activation = max(max(net.o))
-    last_factor = max(max_weight, max_activation)
-    current_factor =  previous_factor / last_factor
+    max_weight = max(max(net.ffW));
+    max_activation = max(max(net.o));
+    last_factor = max(max_weight, max_activation);
+    current_factor =  previous_factor / last_factor;
     net.ffW = net.ffW * current_factor;
 end
 
