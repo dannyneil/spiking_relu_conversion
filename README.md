@@ -107,8 +107,13 @@ ylabel('Accuracy [%]');
 
 Unzip the repo and navigate to it within Matlab.  That's it.  If you'd like to test the installation, run the following matlab file:
 ```matlab
-example
+example_fcn
 ```
+for a fully-connected network (~5 minutes), or:
+```matlab
+example_convnet
+```
+for a convolutional neural network.
 
 ### File overview
 

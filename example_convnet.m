@@ -22,29 +22,27 @@ cnn.act_fun = @(inp)max(0, inp);
 % Set the derivative to be the binary derivative of a ReLU
 cnn.d_act_fun = @(forward_act)double(forward_act>0);
 %% ReLU Train
-for i=2:20
 % Set up learning constants
 opts.alpha = 1;
 opts.batchsize = 50;
-opts.numepochs =  1;
+opts.numepochs = 12;
 opts.learn_bias = 0;
 opts.dropout = 0.0;
 cnn.first_layer_dropout = 0;
-% Train - takes about 135 seconds per epoch on my machine
+% Train - takes about 127 seconds per epoch on my machine
 cnn = cnntrain(cnn, train_x, train_y, opts);
 % Test
 [er, bad] = cnntest(cnn, train_x, train_y);
 fprintf('TRAINING Accuracy: %2.2f%%.\n', (1-er)*100);
 [er, bad] = cnntest(cnn, test_x, test_y);
 fprintf('Test Accuracy: %2.2f%%.\n', (1-er)*100);
-end
 %% Spike-based Testing of a ConvNet
 t_opts = struct;
 t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
 t_opts.duration     = 0.050;
-t_opts.report_every = 0.002;
+t_opts.report_every = 0.001;
 t_opts.max_rate     =  1000;
 cnn = convlifsim(cnn, test_x, test_y, t_opts);
 fprintf('Done.\n');
@@ -60,7 +58,7 @@ t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
 t_opts.duration     = 0.050;
-t_opts.report_every = 0.010;
+t_opts.report_every = 0.001;
 t_opts.max_rate     =  1000;
 norm_convnet = convlifsim(norm_convnet, test_x, test_y, t_opts);
 fprintf('Done.\n');

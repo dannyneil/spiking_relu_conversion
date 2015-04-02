@@ -1,9 +1,9 @@
-function net = normalize_cnn_data(net, train_x)
+function [net, factor_log] = normalize_cnn_data(net, train_x)
     % Propagate data through the net
     net = cnnff(net, train_x);
         
     previous_factor = 1;
-    factor_log = zeros(numel(net.layers));
+    factor_log = nan(1, numel(net.layers));
 	for l = 2 : numel(net.layers)
         if strcmp(net.layers{l}.type, 'c')
             max_weight = 0;
@@ -26,6 +26,7 @@ function net = normalize_cnn_data(net, train_x)
                         net.layers{l}.k{ii}{j} * current_factor;
                 end
             end
+            factor_log(l) = current_factor;
             previous_factor =  current_factor;
         end
     end
@@ -34,6 +35,7 @@ function net = normalize_cnn_data(net, train_x)
     max_activation = max(max(net.o));
     last_factor = max(max_weight, max_activation);
     current_factor =  previous_factor / last_factor;
+    factor_log(end+1) = current_factor;
     net.ffW = net.ffW * current_factor;
 end
 

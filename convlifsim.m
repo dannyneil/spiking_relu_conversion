@@ -110,7 +110,7 @@ for t = 0:opts.dt:opts.duration
             0 && (t/opts.dt > 0))
         [~, guess_idx] = max(cnn.o_sum_spikes);
         acc = sum(guess_idx==ans_idx)/size(test_y, 2) * 100;
-        fprintf('Accuracy: %2.2f%%.\n', acc);
+        fprintf('Time: %1.3fs | Accuracy: %2.2f%%.\n', t, acc);
         cnn.performance(end+1) = acc;
     else
         fprintf('.');            
