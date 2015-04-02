@@ -19,23 +19,23 @@ function [net, factor_log] = normalize_cnn_data(net, train_x)
                 end
             end
             scale_factor = max(max_weight, max_activation);
-            current_factor = previous_factor / scale_factor;
+            current_factor = scale_factor / previous_factor;
             for ii = 1 : numel(net.layers{l - 1}.a)
                 for j = 1 : numel(net.layers{l}.a)
                     net.layers{l}.k{ii}{j} = ...
-                        net.layers{l}.k{ii}{j} * current_factor;
+                        net.layers{l}.k{ii}{j} / current_factor;
                 end
             end
-            factor_log(l) = current_factor;
+            factor_log(l) = 1 / current_factor;
             previous_factor =  current_factor;
         end
     end
 
     max_weight = max(max(net.ffW));
     max_activation = max(max(net.o));
-    last_factor = max(max_weight, max_activation);
-    current_factor =  previous_factor / last_factor;
-    factor_log(end+1) = current_factor;
-    net.ffW = net.ffW * current_factor;
+    final_factor = max(max_weight, max_activation);
+    current_factor =  final_factor / previous_factor;
+    net.ffW = net.ffW / current_factor;
+    factor_log(end+1) = 1 / current_factor;
 end
 
