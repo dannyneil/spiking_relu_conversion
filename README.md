@@ -5,7 +5,9 @@ Conversion code for training and running extremely high-performance spiking neur
 
 ### Citation
 
-Coming soon, hopefully.
+```
+Diehl, P.U. and Neil, D. and Binas, J. and Cook, M. and Liu, S.C. and Pfeiffer, M. Fast-Classifying, High-Accuracy Spiking Deep Networks Through Weight and Threshold Balancing, IEEE International Joint Conference on Neural Networks (IJCNN), 2015
+```
 
 ### Features
 
@@ -25,7 +27,7 @@ Coming soon, hopefully.
 }
 ```
 
-### Example
+### Example - Fully Connected Network
 
 ```matlab
 %% Train an example FC network to achieve very high classification, fast.
@@ -49,6 +51,7 @@ end
 %% ReLU Train
 % Set up learning constants
 nn.activation_function = 'relu';
+nn.output ='relu';
 nn.learningRate = 1;
 nn.momentum = 0.5;
 nn.dropoutFraction = 0.5;
@@ -57,7 +60,7 @@ opts.numepochs =  15;
 opts.batchsize = 100;
 % Train - takes about 15 seconds per epoch on my machine
 nn = nntrain(nn, train_x, train_y, opts);
-% Test
+% Test - should be 98.62% after 15 epochs
 [er, train_bad] = nntest(nn, train_x, train_y);
 fprintf('TRAINING Accuracy: %2.2f%%.\n', (1-er)*100);
 [er, bad] = nntest(nn, test_x, test_y);
@@ -67,7 +70,7 @@ t_opts = struct;
 t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
-t_opts.duration     = 0.020;
+t_opts.duration     = 0.040;
 t_opts.report_every = 0.001;
 t_opts.max_rate     =   200;
 nn = nnlifsim(nn, test_x, test_y, t_opts);
@@ -84,7 +87,7 @@ t_opts = struct;
 t_opts.t_ref        = 0.000;
 t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
-t_opts.duration     = 0.020;
+t_opts.duration     = 0.040;
 t_opts.report_every = 0.001;
 t_opts.max_rate     =  1000;
 norm_nn = nnlifsim(norm_nn, test_x, test_y, t_opts);
@@ -109,7 +112,28 @@ example
 
 ### File overview
 
-Coming soon.
+* dlt_cnn_map_dropout_nobiasnn - a modification of the DeepLearnToolbox (https://github.com/rasmusbergpalm/DeepLearnToolbox) that includes ReLU units and map-based dropout for the convolutional neural networks.  This is the main toolbox used for training
+
+* convlifsim.m - An Integrate-and-Fire simulator for convolutional neural networks using mean pooling and a timestepped approach.
+
+* example_convnet.m - Example of training a convolutional neural network, testing its spike-based performance, normalizing the network, and testing it again afterwards.
+
+* example_fcn.m  - Example of training a fully-connected neural network, testing its spike-based performance, normalizing the network, and testing it again afterwards.
+
+* nn_98.84.mat - The fully-connected network used in the paper.
+
+* nnlifsim.m - - An Integrate-and-Fire simulator for convolutional neural networks using a timestepped approach.
+
+* normalize_cnn_data.m - Data normalization method for convolutional neural networks.
+
+* normalize_cnn_model.m - Model normalization method for convolutional neural networks.
+
+* normalize_nn_data.m - Data normalization method for fully-connected networks.
+
+* normalize_nn_model.m - Model normalization method for fully-connected networks.
+
+* README.md - this readme file.
+
 
 ### Questions
 Please feel free to reach out here if you have any questions or difficulties.  I'm happy to help guide you.

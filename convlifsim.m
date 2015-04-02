@@ -18,7 +18,7 @@ cnn.sum_fv = zeros(size(cnn.ffW,2), num_examples);
 cnn.o_mem        = zeros(num_classes, num_examples);
 cnn.o_refrac_end = zeros(num_classes, num_examples);
 cnn.o_sum_spikes = zeros(num_classes, num_examples);
-
+cnn.performance  = [];
 % Precache answers
 [~, ans_idx] = max(test_y);
 
@@ -111,6 +111,7 @@ for t = 0:opts.dt:opts.duration
         [~, guess_idx] = max(cnn.o_sum_spikes);
         acc = sum(guess_idx==ans_idx)/size(test_y, 2) * 100;
         fprintf('Accuracy: %2.2f%%.\n', acc);
+        cnn.performance(end+1) = acc;
     else
         fprintf('.');            
     end
