@@ -119,6 +119,8 @@ for a convolutional neural network.
 
 * dlt_cnn_map_dropout_nobiasnn - a modification of the DeepLearnToolbox (https://github.com/rasmusbergpalm/DeepLearnToolbox) that includes ReLU units and map-based dropout for the convolutional neural networks.  This is the main toolbox used for training
 
+* cnn_99.14.mat - The convolutional network used in the paper.
+
 * convlifsim.m - An Integrate-and-Fire simulator for convolutional neural networks using mean pooling and a timestepped approach.
 
 * example_convnet.m - Example of training a convolutional neural network, testing its spike-based performance, normalizing the network, and testing it again afterwards.
