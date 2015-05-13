@@ -93,7 +93,8 @@ for t = 0:opts.dt:opts.duration
     %   Add inputs multiplied by weight
     impulse = cnn.ffW * cnn.fv;
     %   Only add input from neurons past their refractory point
-    impulse(cnn.o_refrac_end <= t) = 0;
+    impulse(cnn.o_refrac_end >= t) = 0;
+
     %   Add input to membrane potential
     cnn.o_mem = cnn.o_mem + impulse;
     %   Check for spiking
