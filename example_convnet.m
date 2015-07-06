@@ -2,7 +2,7 @@
 %    Load paths
 addpath(genpath('./dlt_cnn_map_dropout_nobiasnn'));
 %% Load data
-rand('state', 11bjobs);
+rand('state', 1);
 load mnist_uint8;
 train_x = double(reshape(train_x',28,28,60000)) / 255;
 test_x = double(reshape(test_x',28,28,10000)) / 255;
@@ -43,7 +43,7 @@ t_opts.threshold    =   1.0;
 t_opts.dt           = 0.001;
 t_opts.duration     = 0.020;
 t_opts.report_every = 0.001;
-t_opts.max_rate     =  1000;
+t_opts.max_rate     =   400;
 cnn = convlifsim(cnn, test_x, test_y, t_opts);
 fprintf('Done.\n');
 %% Data-normalize the CNN

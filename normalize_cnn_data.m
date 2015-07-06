@@ -31,11 +31,11 @@ function [net, factor_log] = normalize_cnn_data(net, train_x)
         end
     end
 
-    max_weight = max(max(net.ffW));
-    max_activation = max(max(net.o));
-    final_factor = max(max_weight, max_activation);
-    current_factor =  final_factor / previous_factor;
-    net.ffW = net.ffW / current_factor;
-    factor_log(end+1) = 1 / current_factor;
+%     max_weight = max(max(net.ffW));
+%     max_activation = max(max(net.o));
+%     final_factor = max(max_weight, max_activation);
+%     current_factor =  final_factor / previous_factor;
+%     net.ffW = net.ffW / current_factor;
+%     factor_log(end+1) = 1 / current_factor;
 end
 
